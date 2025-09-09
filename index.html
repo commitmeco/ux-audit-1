@@ -1,1433 +1,473 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Behavioral UX Deep Dive | CMCD</title>
+    <title>CMCD | Digital Brain Health Audit: Behavioral UX Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #1a202c;
-            background: #f7fafc;
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
         }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
+        .main-score-circle-bg {
+            fill: none;
+            stroke: #e2e8f0; /* slate-200 */
         }
-
-        /* Header */
-        .header {
-            background: white;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        .main-score-circle-progress {
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            transition: stroke-dashoffset 1.5s ease-in-out;
         }
-
-        .nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.25rem 0;
+        .quadrant-score-bar-bg {
+            background-color: #e2e8f0; /* slate-200 */
         }
-
-        .logo {
-            font-size: 1.75rem;
-            font-weight: 800;
-            color: #2d3748;
-            letter-spacing: -0.025em;
+        .quadrant-score-bar-progress {
+            transition: width 1s ease-in-out;
         }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
+        .nav-link.active {
+            color: #4f46e5; /* indigo-600 */
+            font-weight: 600;
         }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #4a5568;
-            font-weight: 500;
-            padding: 0.75rem 1.25rem;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            font-size: 0.95rem;
-        }
-
-        .nav-links a:hover, .nav-links a.active {
-            background: #667eea;
-            color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
-        }
-
-        /* Main Content */
-        .main {
-            padding: 2rem 0 4rem;
-        }
-
-        .section {
-            background: white;
-            margin: 3rem 0;
-            border-radius: 16px;
-            padding: 3rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e2e8f0;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 0.6s ease forwards;
-        }
-
-        .section:nth-child(2) { animation-delay: 0.1s; }
-        .section:nth-child(3) { animation-delay: 0.2s; }
-        .section:nth-child(4) { animation-delay: 0.3s; }
-        .section:nth-child(5) { animation-delay: 0.4s; }
-        .section:nth-child(6) { animation-delay: 0.5s; }
-        .section:nth-child(7) { animation-delay: 0.6s; }
-
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Hero Section */
-        .hero {
-            text-align: center;
-            padding: 4rem 3rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero::before {
+        .nav-link.active::after {
             content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.1);
-            z-index: 1;
-        }
-
-        .hero > * {
-            position: relative;
-            z-index: 2;
-        }
-
-        .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 900;
-            margin-bottom: 1.5rem;
-            letter-spacing: -0.025em;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .hero-subtitle {
-            font-size: 1.4rem;
-            margin-bottom: 3rem;
-            font-weight: 400;
-            opacity: 0.95;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .brain-visual {
-            position: relative;
-            width: 280px;
-            height: 180px;
-            margin: 2rem auto;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            animation: brainPulse 3s ease-in-out infinite;
-        }
-
-        @keyframes brainPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .brain-text {
-            color: white;
-            font-size: 1.3rem;
-            font-weight: 700;
-            text-align: center;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Cognitive Load Meter */
-        .cognitive-load {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 3rem;
-            margin: 3rem 0;
-            flex-wrap: wrap;
-        }
-
-        .load-meter {
-            position: relative;
-            width: 220px;
-            height: 110px;
-            overflow: hidden;
-            border-radius: 110px 110px 0 0;
-            background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
-            border: 4px solid white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .load-needle {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 4px;
-            height: 90px;
-            background: #2d3748;
-            border-radius: 2px;
-            transform-origin: bottom center;
-            transform: translateX(-50%) rotate(45deg);
-            animation: needleMove 2s ease-out forwards;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        @keyframes needleMove {
-            from { transform: translateX(-50%) rotate(-45deg); }
-            to { transform: translateX(-50%) rotate(45deg); }
-        }
-
-        .load-label {
-            text-align: center;
-        }
-
-        .load-score {
-            font-size: 3.5rem;
-            font-weight: 900;
-            color: #ef4444;
             display: block;
-            line-height: 1;
-        }
-
-        .load-text {
-            color: #4a5568;
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-top: 0.5rem;
-        }
-
-        .hero-description {
-            font-size: 1.125rem;
-            margin-top: 2rem;
-            opacity: 0.9;
-            max-width: 650px;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.7;
-        }
-
-        /* User Journey Visualization */
-        .journey-map {
-            position: relative;
-            padding: 3rem 0;
-            overflow-x: auto;
-            margin: 2rem 0;
-        }
-
-        .journey-path {
-            display: flex;
-            align-items: center;
-            min-width: 1100px;
-            position: relative;
-            justify-content: space-between;
-        }
-
-        .journey-step {
-            flex: 1;
-            text-align: center;
-            position: relative;
-            z-index: 2;
-            max-width: 200px;
-        }
-
-        .step-circle {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            margin: 0 auto 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            color: white;
-            font-weight: 700;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .step-circle:hover {
-            transform: scale(1.1);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-        }
-
-        .step-landing { background: linear-gradient(135deg, #10b981, #34d399); }
-        .step-browse { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
-        .step-engage { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
-        .step-convert { background: linear-gradient(135deg, #ef4444, #f87171); }
-        .step-retain { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
-
-        .step-title {
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            color: #1a202c;
-            font-size: 1.2rem;
-        }
-
-        .step-friction {
-            font-size: 1rem;
-            color: #e53e3e;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            background: #fed7d7;
-            padding: 0.5rem;
-            border-radius: 6px;
-        }
-
-        .step-success {
-            font-size: 0.95rem;
-            color: #38a169;
-            font-weight: 500;
-            background: #c6f6d5;
-            padding: 0.5rem;
-            border-radius: 6px;
-        }
-
-        .journey-line {
-            position: absolute;
-            top: 45px;
-            left: 45px;
-            right: 45px;
-            height: 6px;
-            background: linear-gradient(90deg, #10b981, #3b82f6, #f59e0b, #ef4444, #8b5cf6);
-            border-radius: 3px;
-            z-index: 1;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Heatmap Visualization */
-        .heatmap-container {
-            background: #f7fafc;
-            border-radius: 16px;
-            padding: 3rem;
-            margin: 3rem 0;
-            border: 1px solid #e2e8f0;
-        }
-
-        .heatmap-title {
-            text-align: center;
-            margin-bottom: 2rem;
-            font-weight: 700;
-            color: #1a202c;
-            font-size: 1.5rem;
-        }
-
-        .heatmap {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            gap: 6px;
-            max-width: 650px;
-            margin: 0 auto 2rem;
-        }
-
-        .heatmap-cell {
-            aspect-ratio: 1;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .heat-high { background: #ef4444; }
-        .heat-medium { background: #f59e0b; }
-        .heat-low { background: #10b981; }
-        .heat-none { background: #cbd5e0; }
-
-        .heatmap-cell:hover {
-            transform: scale(1.15);
-            z-index: 10;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
-
-        .heatmap-legend {
-            display: flex;
-            justify-content: center;
-            gap: 2.5rem;
-            flex-wrap: wrap;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 1rem;
-            color: #4a5568;
-            font-weight: 500;
-        }
-
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Behavioral Insights Grid */
-        .insights-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .insight-card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 2rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .insight-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
             width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.05), transparent);
-            transition: left 0.6s ease;
+            height: 2px;
+            background: #4f46e5; /* indigo-600 */
+            margin-top: 2px;
         }
-
-        .insight-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-            border-color: #667eea;
+        /* Custom gradient for the hero section */
+        .hero-gradient {
+             background: radial-gradient(circle at top, rgba(238, 242, 255, 0.8), transparent 50%),
+                        radial-gradient(circle at bottom left, rgba(224, 231, 255, 0.6), transparent 60%),
+                        radial-gradient(circle at bottom right, rgba(236, 254, 255, 0.5), transparent 70%);
         }
-
-        .insight-card:hover::before {
-            left: 100%;
-        }
-
-        .insight-header {
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .insight-icon {
-            width: 70px;
-            height: 70px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .insight-title {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: #1a202c;
-            line-height: 1.3;
-        }
-
-        .insight-metric {
-            font-size: 2.75rem;
-            font-weight: 900;
-            margin-bottom: 1rem;
-            color: #2d3748;
-            line-height: 1;
-        }
-
-        .insight-description {
-            color: #4a5568;
-            line-height: 1.7;
-            margin-bottom: 1.5rem;
-            font-size: 1.05rem;
-        }
-
-        .insight-impact {
+        .gemini-loader {
+            width: 32px;
+            height: 32px;
+            border: 4px solid #e2e8f0;
+            border-bottom-color: #4f46e5;
+            border-radius: 50%;
             display: inline-block;
-            padding: 0.6rem 1.2rem;
-            border-radius: 25px;
-            font-size: 0.85rem;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Prose styles for Gemini output */
+        #gemini-output h4 {
+            font-size: 1.125rem;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .impact-critical {
-            background: #fed7d7;
-            color: #c53030;
-        }
-
-        .impact-high {
-            background: #feebc8;
-            color: #dd6b20;
-        }
-
-        .impact-medium {
-            background: #bee3f8;
-            color: #2b6cb0;
-        }
-
-        /* Psychology Principles */
-        .psychology-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .psychology-card {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 2rem;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .psychology-card:hover {
-            transform: translateY(-4px);
-            border-color: #8b5cf6;
-            box-shadow: 0 12px 24px rgba(139, 92, 246, 0.15);
-        }
-
-        .psychology-icon {
-            font-size: 3.5rem;
-            margin-bottom: 1.5rem;
-            display: block;
-        }
-
-        .psychology-title {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: #553c9a;
-            margin-bottom: 1rem;
-        }
-
-        .psychology-description {
-            color: #4a5568;
-            margin-bottom: 1.5rem;
-            line-height: 1.7;
-            font-size: 1.05rem;
-        }
-
-        .current-state, .recommended-state {
-            padding: 1.25rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-        }
-
-        .current-state {
-            background: #fed7d7;
-            border-left: 4px solid #e53e3e;
-        }
-
-        .recommended-state {
-            background: #c6f6d5;
-            border-left: 4px solid #38a169;
-        }
-
-        .current-label, .recommended-label {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            letter-spacing: 0.5px;
-        }
-
-        .current-label {
-            color: #c53030;
-        }
-
-        .recommended-label {
-            color: #2f855a;
-        }
-
-        .current-state p, .recommended-state p {
-            margin: 0;
-            color: #1a202c;
-            font-weight: 500;
-            line-height: 1.5;
-        }
-
-        /* Recommendations Section */
-        .recommendations-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .recommendation-card {
-            background: white;
-            border: 1px solid #c6f6d5;
-            border-radius: 16px;
-            padding: 2.5rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .recommendation-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(16, 185, 129, 0.15);
-            border-color: #38a169;
-        }
-
-        .rec-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1.5rem;
-        }
-
-        .rec-priority {
-            display: inline-block;
-            padding: 0.4rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-
-        .priority-1 {
-            background: #fed7d7;
-            color: #c53030;
-        }
-
-        .priority-2 {
-            background: #feebc8;
-            color: #dd6b20;
-        }
-
-        .priority-3 {
-            background: #c6f6d5;
-            color: #2f855a;
-        }
-
-        .rec-title {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #1a202c;
-            margin-bottom: 1rem;
-            flex: 1;
-            margin-right: 1rem;
-        }
-
-        .rec-description {
-            color: #4a5568;
-            margin-bottom: 2rem;
-            line-height: 1.7;
-            font-size: 1.05rem;
-        }
-
-        .rec-benefits {
-            background: #f0fff4;
-            padding: 1.5rem;
-            border-radius: 12px;
-            border-left: 4px solid #38a169;
-        }
-
-        .benefits-title {
-            font-weight: 700;
-            color: #2f855a;
-            margin-bottom: 1rem;
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .benefits-list {
-            list-style: none;
-            color: #1a202c;
-        }
-
-        .benefits-list li {
-            position: relative;
-            padding-left: 2rem;
+            color: #4338ca; /* indigo-700 */
+            margin-top: 1.5rem;
             margin-bottom: 0.5rem;
-            line-height: 1.6;
         }
-
-        .benefits-list li::before {
-            content: '✓';
-            position: absolute;
-            left: 0;
-            color: #38a169;
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-
-        /* Section Headers */
-        .section-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .section-title {
-            font-size: 2.75rem;
-            font-weight: 900;
+         #gemini-output p {
             margin-bottom: 1rem;
-            color: #1a202c;
-            letter-spacing: -0.025em;
-        }
-
-        .section-subtitle {
-            font-size: 1.25rem;
-            color: #4a5568;
-            font-weight: 400;
-            max-width: 700px;
-            margin: 0 auto;
             line-height: 1.6;
-        }
-
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 16px;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .hero {
-                padding: 3rem 2rem;
-            }
-
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .hero-subtitle {
-                font-size: 1.2rem;
-            }
-
-            .brain-visual {
-                width: 220px;
-                height: 140px;
-            }
-
-            .cognitive-load {
-                flex-direction: column;
-                gap: 2rem;
-            }
-
-            .load-meter {
-                width: 180px;
-                height: 90px;
-            }
-
-            .journey-path {
-                flex-direction: column;
-                min-width: auto;
-                gap: 2rem;
-            }
-
-            .journey-line {
-                display: none;
-            }
-
-            .section {
-                padding: 2rem 1.5rem;
-                margin: 2rem 0;
-            }
-
-            .section-title {
-                font-size: 2.25rem;
-            }
-
-            .section-subtitle {
-                font-size: 1.1rem;
-            }
-
-            .insights-grid,
-            .psychology-grid,
-            .recommendations-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .heatmap-legend {
-                gap: 1.5rem;
-            }
-
-            .rec-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-            }
-
-            .rec-title {
-                margin-right: 0;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            .section-title {
-                font-size: 1.875rem;
-            }
-
-            .insight-metric {
-                font-size: 2.25rem;
-            }
-
-            .load-score {
-                font-size: 2.75rem;
-            }
-
-            .insights-grid,
-            .psychology-grid,
-            .recommendations-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Accessibility improvements */
-        .tooltip {
-            position: relative;
-            cursor: help;
-        }
-
-        .tooltip::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 120%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #000000;
-            color: white;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .tooltip:hover::after,
-        .tooltip:focus::after {
-            opacity: 1;
-        }
-
-        /* Focus states for accessibility */
-        .step-circle:focus,
-        .insight-card:focus,
-        .psychology-card:focus,
-        .recommendation-card:focus,
-        .nav-links a:focus {
-            outline: 3px solid #667eea;
-            outline-offset: 2px;
-        }
+         }
+         #gemini-output strong {
+            font-weight: 600;
+            color: #1e293b; /* slate-800 */
+         }
     </style>
 </head>
-<body>
-    <header class="header">
-        <div class="container">
-            <nav class="nav">
-                <div class="logo">CMCD</div>
-                <ul class="nav-links">
-                    <li><a href="#overview" class="active">Overview</a></li>
-                    <li><a href="#journey">User Journey</a></li>
-                    <li><a href="#insights">Behavioral Insights</a></li>
-                    <li><a href="#psychology">Psychology</a></li>
-                    <li><a href="#recommendations">Recommendations</a></li>
-                </ul>
-            </nav>
+<body class="text-slate-800">
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center gap-2">
+                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-indigo-600">
+                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12.88 17.88L11.12 16.12L12.88 14.38L14.62 12.62L12.88 10.88L11.12 9.12L12.88 7.38L14.62 5.62C15.7 6.7 16.5 8.09 16.88 9.62L14.38 12.12L16.12 13.88L13.62 16.38C13.39 16.96 13.12 17.47 12.88 17.88ZM9.12 7.38L10.88 9.12L9.12 10.88L7.38 12.62L9.12 14.38L10.88 16.12L9.12 17.88C8.04 16.8 7.25 15.41 6.88 13.88L9.38 11.38L7.62 9.62L10.12 7.12C10.36 6.54 10.62 6.03 10.88 5.62L9.12 7.38Z" fill="currentColor"/>
+                    </svg>
+                    <span class="text-xl font-bold tracking-tight">Commit Me Co Design</span>
+                </div>
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#overview" class="nav-link text-slate-600 hover:text-indigo-600 transition-colors">Overview</a>
+                    <a href="#ux" class="nav-link text-slate-600 hover:text-indigo-600 transition-colors">Behavioral UX</a>
+                    <a href="#analysis" class="nav-link text-slate-600 hover:text-indigo-600 transition-colors">Quadrant Analysis</a>
+                    <a href="#recommendations" class="nav-link text-slate-600 hover:text-indigo-600 transition-colors">Recommendations</a>
+                    <a href="#ai-strategy" class="nav-link text-slate-600 hover:text-indigo-600 transition-colors">AI Strategy</a>
+                </nav>
+                 <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="hidden md:hidden pb-4">
+                <a href="#overview" class="nav-link-mobile block py-2 px-4 text-sm text-slate-600 hover:bg-indigo-50 rounded-md">Overview</a>
+                <a href="#ux" class="nav-link-mobile block py-2 px-4 text-sm text-slate-600 hover:bg-indigo-50 rounded-md">Behavioral UX</a>
+                <a href="#analysis" class="nav-link-mobile block py-2 px-4 text-sm text-slate-600 hover:bg-indigo-50 rounded-md">Quadrant Analysis</a>
+                <a href="#recommendations" class="nav-link-mobile block py-2 px-4 text-sm text-slate-600 hover:bg-indigo-50 rounded-md">Recommendations</a>
+                <a href="#ai-strategy" class="nav-link-mobile block py-2 px-4 text-sm text-slate-600 hover:bg-indigo-50 rounded-md">AI Strategy</a>
+            </div>
         </div>
     </header>
 
-    <main class="main">
-        <div class="container">
-            <!-- Hero Section -->
-            <section id="overview" class="section hero">
-                <h1>🧠 Behavioral UX Deep Dive</h1>
-                <p class="hero-subtitle">Understanding the cognitive patterns and behavioral triggers in your digital experience</p>
-                
-                <div class="brain-visual">
-                    <div class="brain-text">Cognitive Load<br>Analysis</div>
-                </div>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-                <div class="cognitive-load">
-                    <div class="load-meter">
-                        <div class="load-needle"></div>
-                    </div>
-                    <div class="load-label">
-                        <span class="load-score">7.8</span>
-                        <span class="load-text">High Cognitive Load</span>
-                    </div>
-                </div>
+        <!-- Section: Overview -->
+        <section id="overview" class="pt-8 pb-16 hero-gradient rounded-3xl">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">Your Digital Brain Health</h1>
+                <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">A behavioral audit of your complete digital ecosystem. We analyze your website and social media channels through the lens of user psychology, mapping the entire customer journey to reveal opportunities for a more intuitive and persuasive experience.</p>
+            </div>
 
-                <p class="hero-description">
-                    Your users are experiencing significant mental effort to process information and complete tasks. This creates friction and reduces conversion rates.
-                </p>
-            </section>
-
-            <!-- User Journey Section -->
-            <section id="journey" class="section">
-                <div class="section-header">
-                    <h2 class="section-title">User Journey Friction Points</h2>
-                    <p class="section-subtitle">Mapping cognitive load and emotional states across the user experience</p>
-                </div>
-
-                <div class="journey-map">
-                    <div class="journey-path">
-                        <div class="journey-line"></div>
-                        
-                        <div class="journey-step">
-                            <div class="step-circle step-landing tooltip" data-tooltip="Users arrive confused about value proposition" tabindex="0">🏠</div>
-                            <h3 class="step-title">Landing</h3>
-                            <p class="step-friction">67% bounce rate</p>
-                            <p class="step-success">Clear hero message needed</p>
-                        </div>
-
-                        <div class="journey-step">
-                            <div class="step-circle step-browse tooltip" data-tooltip="Navigation causes decision paralysis" tabindex="0">👀</div>
-                            <h3 class="step-title">Browse</h3>
-                            <p class="step-friction">8+ menu choices</p>
-                            <p class="step-success">Users spend 23s deciding</p>
-                        </div>
-
-                        <div class="journey-step">
-                            <div class="step-circle step-engage tooltip" data-tooltip="Content overload reduces engagement" tabindex="0">📖</div>
-                            <h3 class="step-title">Engage</h3>
-                            <p class="step-friction">89% don't scroll</p>
-                            <p class="step-success">Wall of text detected</p>
-                        </div>
-
-                        <div class="journey-step">
-                            <div class="step-circle step-convert tooltip" data-tooltip="Forms appear too early in journey" tabindex="0">💳</div>
-                            <h3 class="step-title">Convert</h3>
-                            <p class="step-friction">76% form abandon</p>
-                            <p class="step-success">No value established</p>
-                        </div>
-
-                        <div class="journey-step">
-                            <div class="step-circle step-retain tooltip" data-tooltip="No clear next steps after conversion" tabindex="0">🔄</div>
-                            <h3 class="step-title">Retain</h3>
-                            <p class="step-friction">Low return visits</p>
-                            <p class="step-success">Onboarding gaps</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+                <!-- Main Score Gauge -->
+                <div class="md:col-span-1 flex flex-col items-center justify-center">
+                    <div class="relative w-64 h-64">
+                        <svg class="w-full h-full" viewBox="0 0 120 120">
+                            <circle class="main-score-circle-bg" cx="60" cy="60" r="54" stroke-width="12"></circle>
+                            <circle id="main-score-progress" class="main-score-circle-progress" cx="60" cy="60" r="54" stroke-width="12" stroke-dasharray="339.292" stroke-dashoffset="339.292"></circle>
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span id="main-score-text" class="text-5xl font-extrabold text-slate-800">0</span>
+                            <span class="text-sm font-medium text-slate-500">Overall Score</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="heatmap-container">
-                    <h3 class="heatmap-title">Attention Heatmap - Homepage</h3>
-                    <div class="heatmap" id="heatmap">
-                        <!-- Heatmap cells will be generated by JavaScript -->
-                    </div>
-                    <div class="heatmap-legend">
-                        <div class="legend-item">
-                            <div class="legend-color heat-high"></div>
-                            <span>High Attention</span>
+                <!-- Quadrant Scores -->
+                <div id="quadrant-cards" class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <!-- Behavioral UX Card -->
+                    <div class="bg-white/60 p-6 rounded-2xl shadow-lg border-2 border-indigo-500 transform hover:scale-105 transition-transform duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-indigo-700">Core Behavioral UX</h3>
+                            <span class="font-bold text-red-600 text-2xl">68</span>
                         </div>
-                        <div class="legend-item">
-                            <div class="legend-color heat-medium"></div>
-                            <span>Medium Attention</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color heat-low"></div>
-                            <span>Low Attention</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color heat-none"></div>
-                            <span>No Attention</span>
+                        <div class="w-full quadrant-score-bar-bg rounded-full h-2.5">
+                            <div class="quadrant-score-bar-progress bg-red-500 h-2.5 rounded-full" style="width: 0%" data-score="68"></div>
                         </div>
                     </div>
-                </div>
-            </section>
-
-            <!-- Behavioral Insights Section -->
-            <section id="insights" class="section">
-                <div class="section-header">
-                    <h2 class="section-title">Behavioral Insights</h2>
-                    <p class="section-subtitle">Data-driven analysis of user behavior patterns and decision-making processes</p>
-                </div>
-
-                <div class="insights-grid">
-                    <div class="insight-card" tabindex="0">
-                        <div class="insight-header">
-                            <div class="insight-icon" style="background: linear-gradient(135deg, #ef4444, #f87171);">⏱️</div>
-                            <h3 class="insight-title">Decision Fatigue</h3>
+                    <!-- Performance Card -->
+                    <div class="bg-white/60 p-6 rounded-2xl shadow-sm border border-slate-200/50 transform hover:scale-105 transition-transform duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-slate-800">Perceived Performance</h3>
+                            <span class="font-bold text-green-600 text-2xl">85</span>
                         </div>
-                        <div class="insight-metric">8.2 sec</div>
-                        <p class="insight-description">
-                            Average time users spend on navigation menu before making a choice. Optimal is under 3 seconds. Too many options are causing analysis paralysis.
-                        </p>
-                        <span class="insight-impact impact-critical">Critical Impact</span>
-                    </div>
-
-                    <div class="insight-card" tabindex="0">
-                        <div class="insight-header">
-                            <div class="insight-icon" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);">👁️</div>
-                            <h3 class="insight-title">Visual Hierarchy</h3>
-                        </div>
-                        <div class="insight-metric">34%</div>
-                        <p class="insight-description">
-                            Users who notice your primary CTA button. The button lacks visual prominence and gets lost among other interface elements.
-                        </p>
-                        <span class="insight-impact impact-high">High Impact</span>
-                    </div>
-
-                    <div class="insight-card" tabindex="0">
-                        <div class="insight-header">
-                            <div class="insight-icon" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">🧠</div>
-                            <h3 class="insight-title">Cognitive Overload</h3>
-                        </div>
-                        <div class="insight-metric">127</div>
-                        <p class="insight-description">
-                            Interactive elements visible on your homepage. Research shows optimal range is 20-40 elements for comfortable cognitive processing.
-                        </p>
-                        <span class="insight-impact impact-critical">Critical Impact</span>
-                    </div>
-
-                    <div class="insight-card" tabindex="0">
-                        <div class="insight-header">
-                            <div class="insight-icon" style="background: linear-gradient(135deg, #3b82f6, #60a5fa);">📱</div>
-                            <h3 class="insight-title">Mobile Behavior</h3>
-                        </div>
-                        <div class="insight-metric">89%</div>
-                        <p class="insight-description">
-                            Of mobile users who abandon your site do so due to difficult navigation. Thumb-friendly design and simplified interactions are needed.
-                        </p>
-                        <span class="insight-impact impact-high">High Impact</span>
-                    </div>
-
-                    <div class="insight-card" tabindex="0">
-                        <div class="insight-header">
-                            <div class="insight-icon" style="background: linear-gradient(135deg, #10b981, #34d399);">💡</div>
-                            <h3 class="insight-title">Information Scent</h3>
-                        </div>
-                        <div class="insight-metric">42%</div>
-                        <p class="insight-description">
-                            Users who click on navigation items that don't lead where they expected. Link labels and page content lack alignment.
-                        </p>
-                        <span class="insight-impact impact-medium">Medium Impact</span>
-                    </div>
-
-                    <div class="insight-card" tabindex="0">
-                        <div class="insight-header">
-                            <div class="insight-icon" style="background: linear-gradient(135deg, #ef4444, #f87171);">⚠️</div>
-                            <h3 class="insight-title">Trust Signals</h3>
-                        </div>
-                        <div class="insight-metric">23%</div>
-                        <p class="insight-description">
-                            Users who can identify trust signals on your site. Lack of testimonials, security badges, and social proof reduces confidence.
-                        </p>
-                        <span class="insight-impact impact-high">High Impact</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Psychology Principles Section -->
-            <section id="psychology" class="section">
-                <div class="section-header">
-                    <h2 class="section-title">Psychology & Persuasion</h2>
-                    <p class="section-subtitle">Applying behavioral psychology principles to improve user experience and conversions</p>
-                </div>
-
-                <div class="psychology-grid">
-                    <div class="psychology-card" tabindex="0">
-                        <div class="psychology-icon">🎯</div>
-                        <h3 class="psychology-title">Hick's Law</h3>
-                        <p class="psychology-description">
-                            The time it takes to make a decision increases with the number of choices available.
-                        </p>
-                        <div class="current-state">
-                            <div class="current-label">Current State</div>
-                            <p>12 main navigation items causing 8.2s decision time</p>
-                        </div>
-                        <div class="recommended-state">
-                            <div class="recommended-label">Recommended</div>
-                            <p>Reduce to 5-7 primary options with grouped sub-items</p>
+                        <div class="w-full quadrant-score-bar-bg rounded-full h-2.5">
+                            <div class="quadrant-score-bar-progress bg-green-500 h-2.5 rounded-full" style="width: 0%" data-score="85"></div>
                         </div>
                     </div>
-
-                    <div class="psychology-card" tabindex="0">
-                        <div class="psychology-icon">👀</div>
-                        <h3 class="psychology-title">Von Restorff Effect</h3>
-                        <p class="psychology-description">
-                            Items that stand out are more likely to be remembered and acted upon.
-                        </p>
-                        <div class="current-state">
-                            <div class="current-label">Current State</div>
-                            <p>CTA buttons blend into page design, 34% visibility</p>
+                    <!-- SEO Card -->
+                    <div class="bg-white/60 p-6 rounded-2xl shadow-sm border border-slate-200/50 transform hover:scale-105 transition-transform duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-slate-800">Cognitive Ease & SEO</h3>
+                            <span class="font-bold text-amber-600 text-2xl">72</span>
                         </div>
-                        <div class="recommended-state">
-                            <div class="recommended-label">Recommended</div>
-                            <p>Use contrasting colors and isolation to highlight key actions</p>
+                        <div class="w-full quadrant-score-bar-bg rounded-full h-2.5">
+                            <div class="quadrant-score-bar-progress bg-amber-500 h-2.5 rounded-full" style="width: 0%" data-score="72"></div>
                         </div>
                     </div>
-
-                    <div class="psychology-card" tabindex="0">
-                        <div class="psychology-icon">🔄</div>
-                        <h3 class="psychology-title">Progressive Disclosure</h3>
-                        <p class="psychology-description">
-                            Present information in layers to prevent cognitive overload.
-                        </p>
-                        <div class="current-state">
-                            <div class="current-label">Current State</div>
-                            <p>127 elements on homepage creating information overload</p>
+                    <!-- Accessibility Card -->
+                    <div class="bg-white/60 p-6 rounded-2xl shadow-sm border border-slate-200/50 transform hover:scale-105 transition-transform duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-slate-800">Inclusive Design</h3>
+                            <span class="font-bold text-sky-600 text-2xl">90</span>
                         </div>
-                        <div class="recommended-state">
-                            <div class="recommended-label">Recommended</div>
-                            <p>Reveal information progressively based on user intent</p>
-                        </div>
-                    </div>
-
-                    <div class="psychology-card" tabindex="0">
-                        <div class="psychology-icon">🏆</div>
-                        <h3 class="psychology-title">Social Proof</h3>
-                        <p class="psychology-description">
-                            People look to others' actions to guide their own behavior.
-                        </p>
-                        <div class="current-state">
-                            <div class="current-label">Current State</div>
-                            <p>Limited social proof elements, 23% trust recognition</p>
-                        </div>
-                        <div class="recommended-state">
-                            <div class="recommended-label">Recommended</div>
-                            <p>Add customer testimonials, usage stats, and reviews</p>
-                        </div>
-                    </div>
-
-                    <div class="psychology-card" tabindex="0">
-                        <div class="psychology-icon">🎨</div>
-                        <h3 class="psychology-title">Gestalt Principles</h3>
-                        <p class="psychology-description">
-                            Users perceive visual elements as organized wholes rather than individual parts.
-                        </p>
-                        <div class="current-state">
-                            <div class="current-label">Current State</div>
-                            <p>Poor visual grouping causing scanning difficulties</p>
-                        </div>
-                        <div class="recommended-state">
-                            <div class="recommended-label">Recommended</div>
-                            <p>Use proximity, similarity, and closure to group related content</p>
-                        </div>
-                    </div>
-
-                    <div class="psychology-card" tabindex="0">
-                        <div class="psychology-icon">⚡</div>
-                        <h3 class="psychology-title">Peak-End Rule</h3>
-                        <p class="psychology-description">
-                            Users judge experiences based on peak moments and how they end.
-                        </p>
-                        <div class="current-state">
-                            <div class="current-label">Current State</div>
-                            <p>No memorable moments, abrupt process endings</p>
-                        </div>
-                        <div class="recommended-state">
-                            <div class="recommended-label">Recommended</div>
-                            <p>Create delightful interactions and satisfying completion states</p>
+                        <div class="w-full quadrant-score-bar-bg rounded-full h-2.5">
+                            <div class="quadrant-score-bar-progress bg-sky-500 h-2.5 rounded-full" style="width: 0%" data-score="90"></div>
                         </div>
                     </div>
                 </div>
-            </section>
-
-            <!-- Recommendations Section -->
-            <section id="recommendations" class="section">
-                <div class="section-header">
-                    <h2 class="section-title">Behavioral UX Recommendations</h2>
-                    <p class="section-subtitle">Prioritized action items to reduce cognitive load and improve user experience</p>
+            </div>
+        </section>
+        
+        <!-- Helper function to create section headers -->
+        <script>
+            function createSectionHeader(icon, title, subtitle) {
+                return `
+                    <div class="text-center mb-12 mt-20 pt-8">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 mb-4">
+                            ${icon}
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">${title}</h2>
+                        <p class="mt-3 max-w-2xl mx-auto text-md text-slate-500">${subtitle}</p>
+                    </div>
+                `;
+            }
+        </script>
+        
+        <!-- Section: Behavioral UX -->
+        <section id="ux" class="scroll-mt-20">
+            <script>
+                document.getElementById('ux').innerHTML = createSectionHeader(
+                    `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 0-7.53 16.59l1.42-1.42A8 8 0 1 1 12 20a8 8 0 0 1-5.66-2.34l1.41-1.41a6 6 0 1 0-8.49-8.49l1.42-1.42A10 10 0 0 0 12 2z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>`,
+                    "Core Behavioral UX Analysis",
+                    "Applying principles of psychology to understand and improve user decision-making, motivation, and action across all digital touchpoints."
+                );
+            </script>
+            <div class="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                    <h3 class="text-lg font-semibold mb-3 text-red-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Finding: High Cognitive Load</h3>
+                    <p class="text-slate-600">Intrusive on-site forms and complex layouts demand too much mental energy. This friction, caused by violating <span class="font-semibold text-indigo-600">Tesler's Law</span> (Conservation of Complexity), leads to task abandonment.</p>
                 </div>
-
-                <div class="recommendations-grid">
-                    <div class="recommendation-card" tabindex="0">
-                        <div class="rec-header">
-                            <h3 class="rec-title">Simplify Navigation</h3>
-                            <span class="rec-priority priority-1">Priority 1</span>
-                        </div>
-                        <p class="rec-description">
-                            Reduce main navigation from 12 to 7 items using card sorting data. Group related items under logical categories and implement mega-menu for complex hierarchies.
-                        </p>
-                        <div class="rec-benefits">
-                            <div class="benefits-title">Expected Benefits</div>
-                            <ul class="benefits-list">
-                                <li>Reduce decision time from 8.2s to 3s</li>
-                                <li>Increase navigation completion by 45%</li>
-                                <li>Improve mobile usability scores</li>
-                                <li>Lower bounce rate by 20%</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="recommendation-card" tabindex="0">
-                        <div class="rec-header">
-                            <h3 class="rec-title">Enhance Visual Hierarchy</h3>
-                            <span class="rec-priority priority-1">Priority 1</span>
-                        </div>
-                        <p class="rec-description">
-                            Redesign primary CTAs with high contrast colors, increase button size by 20%, and use strategic white space to create visual prominence.
-                        </p>
-                        <div class="rec-benefits">
-                            <div class="benefits-title">Expected Benefits</div>
-                            <ul class="benefits-list">
-                                <li>Increase CTA visibility from 34% to 80%</li>
-                                <li>Improve click-through rates by 60%</li>
-                                <li>Reduce user confusion and hesitation</li>
-                                <li>Better accessibility compliance</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="recommendation-card" tabindex="0">
-                        <div class="rec-header">
-                            <h3 class="rec-title">Implement Progressive Disclosure</h3>
-                            <span class="rec-priority priority-2">Priority 2</span>
-                        </div>
-                        <p class="rec-description">
-                            Break complex content into digestible chunks using accordions, tabs, and "Show more" patterns. Prioritize most important information above the fold.
-                        </p>
-                        <div class="rec-benefits">
-                            <div class="benefits-title">Expected Benefits</div>
-                            <ul class="benefits-list">
-                                <li>Reduce cognitive load by 40%</li>
-                                <li>Increase content engagement depth</li>
-                                <li>Improve page load perception</li>
-                                <li>Better mobile experience</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="recommendation-card" tabindex="0">
-                        <div class="rec-header">
-                            <h3 class="rec-title">Add Trust Signals</h3>
-                            <span class="rec-priority priority-2">Priority 2</span>
-                        </div>
-                        <p class="rec-description">
-                            Integrate customer testimonials, usage statistics, security badges, and company logos throughout key conversion points in the user journey.
-                        </p>
-                        <div class="rec-benefits">
-                            <div class="benefits-title">Expected Benefits</div>
-                            <ul class="benefits-list">
-                                <li>Increase trust signal recognition to 75%</li>
-                                <li>Reduce form abandonment by 35%</li>
-                                <li>Improve conversion confidence</li>
-                                <li>Lower support inquiries about credibility</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="recommendation-card" tabindex="0">
-                        <div class="rec-header">
-                            <h3 class="rec-title">Optimize Form Experience</h3>
-                            <span class="rec-priority priority-3">Priority 3</span>
-                        </div>
-                        <p class="rec-description">
-                            Delay form presentation until value is established, use multi-step forms for complex processes, and provide clear progress indicators.
-                        </p>
-                        <div class="rec-benefits">
-                            <div class="benefits-title">Expected Benefits</div>
-                            <ul class="benefits-list">
-                                <li>Reduce form abandonment from 76% to 40%</li>
-                                <li>Increase completion rates by 50%</li>
-                                <li>Better data quality from users</li>
-                                <li>Improved user satisfaction scores</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="recommendation-card" tabindex="0">
-                        <div class="rec-header">
-                            <h3 class="rec-title">Create Micro-Interactions</h3>
-                            <span class="rec-priority priority-3">Priority 3</span>
-                        </div>
-                        <p class="rec-description">
-                            Add delightful feedback for user actions: button hover states, loading animations, success confirmations, and progress celebrations.
-                        </p>
-                        <div class="rec-benefits">
-                            <div class="benefits-title">Expected Benefits</div>
-                            <ul class="benefits-list">
-                                <li>Increase user engagement and satisfaction</li>
-                                <li>Reduce perceived wait times</li>
-                                <li>Create memorable brand moments</li>
-                                <li>Improve task completion confidence</li>
-                            </ul>
-                        </div>
-                    </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                     <h3 class="text-lg font-semibold mb-3 text-green-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Opportunity: Leverage Social Proof</h3>
+                    <p class="text-slate-600">User-generated content from social media is not being leveraged on the website. Featuring customer photos or reviews builds trust and reduces hesitation by showing that others have made the same choice.</p>
                 </div>
-            </section>
-        </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                    <h3 class="text-lg font-semibold mb-3 text-red-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Finding: Disjointed User Journey</h3>
+                    <p class="text-slate-600">The messaging and calls-to-action on social media posts do not align with the landing pages they link to. This creates a jarring experience and breaks the <span class="font-semibold text-indigo-600">Principle of Least Surprise</span>, confusing users.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                    <h3 class="text-lg font-semibold mb-3 text-green-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Opportunity: Apply Choice Architecture</h3>
+                    <p class="text-slate-600">By aligning CTAs from social media ads to their corresponding landing pages, you can create a seamless, guided path. Applying <span class="font-semibold text-indigo-600">Hick's Law</span> (more choices = more time to decide) can streamline the entire journey.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Quadrant Analysis -->
+        <section id="analysis" class="scroll-mt-20">
+             <script>
+                document.getElementById('analysis').innerHTML = createSectionHeader(
+                    `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>`,
+                    "Behavioral Quadrant Analysis",
+                    "A deeper look at Performance, SEO, and Accessibility through a behavioral science lens, connecting social media to website experience."
+                );
+            </script>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                    <h3 class="text-lg font-semibold mb-3 text-slate-800">Perceived Performance</h3>
+                    <p class="text-slate-600">A slow-loading page after a social media click breaks the <span class="font-semibold text-indigo-600">Peak-End Rule</span> by creating a negative first impression that colors the entire experience, eroding trust before a user even engages.</p>
+                </div>
+                 <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                    <h3 class="text-lg font-semibold mb-3 text-slate-800">Cognitive Ease & Brand Consistency</h3>
+                    <p class="text-slate-600">Inconsistent messaging between social media and your website violates the principle of <span class="font-semibold text-indigo-600">Cognitive Ease</span>. A user shouldn't have to expend mental energy to connect the dots between your brand's touchpoints.</p>
+                </div>
+                 <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                    <h3 class="text-lg font-semibold mb-3 text-slate-800">Inclusive Design</h3>
+                    <p class="text-slate-600">Accessibility is about ensuring effortless interaction for everyone, everywhere. This includes using alt-text on social media images and ensuring high-contrast design on landing pages, creating a positive experience for all users.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Recommendations -->
+        <section id="recommendations" class="scroll-mt-20">
+            <div class="text-center mb-12 mt-20 pt-8">
+                 <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon></svg>
+                 </div>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">Strategic Behavioral Recommendations</h2>
+                <p class="mt-3 max-w-2xl mx-auto text-md text-slate-500">Based on our audit, focusing on these three psychological pillars will yield the most significant improvements across your digital ecosystem.</p>
+            </div>
+            <div class="space-y-8 max-w-4xl mx-auto">
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200/50 hover:border-indigo-300 transition-all">
+                    <h3 class="text-xl font-bold mb-3 text-indigo-700">1. Engineer a Seamless Journey to Reduce Cognitive Load</h3>
+                    <p class="text-slate-600">Simplify the entire path from social media discovery to on-site action. Ensure messaging, visuals, and offers are consistent. This reduces friction and makes taking the next step feel intuitive and effortless.</p>
+                </div>
+                 <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200/50 hover:border-indigo-300 transition-all">
+                    <h3 class="text-xl font-bold mb-3 text-indigo-700">2. Guide Decisions with Cross-Platform Choice Architecture</h3>
+                    <p class="text-slate-600">Intentionally design how choices are presented from your social posts to your site. Ensure the 'information scent' is strong and consistent. Frame CTAs on social media to perfectly match the value proposition of the landing page.</p>
+                </div>
+                 <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200/50 hover:border-indigo-300 transition-all">
+                    <h3 class="text-xl font-bold mb-3 text-indigo-700">3. Amplify Trust with Social Proof from the Wild</h3>
+                    <p class="text-slate-600">Systematically integrate user-generated content from social media as powerful on-site testimonials. Place this authentic <span class="font-semibold">Social Proof</span> near conversion points to validate the user's decision, reduce anxiety, and encourage action.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section: AI Strategy -->
+        <section id="ai-strategy" class="scroll-mt-20">
+             <div class="text-center mb-12 mt-20 pt-8">
+                 <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+                 </div>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">✨ Gemini-Powered Behavioral Strategy</h2>
+                <p class="mt-3 max-w-2xl mx-auto text-md text-slate-500">Let's synthesize these findings into a creative, behavior-driven growth strategy for your entire digital ecosystem. Press the button to generate novel ideas based on the audit data.</p>
+            </div>
+            <div class="max-w-4xl mx-auto text-center">
+                 <button id="gemini-button" class="bg-indigo-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all text-lg">
+                    Generate Behavioral Strategy
+                </button>
+            </div>
+            <div id="gemini-container" class="max-w-4xl mx-auto mt-8 bg-white p-8 rounded-2xl shadow-lg border border-slate-200/50 hidden">
+                <div id="gemini-loader-container" class="text-center">
+                    <div class="gemini-loader mx-auto"></div>
+                    <p class="mt-4 text-slate-500">Synthesizing behavioral insights...</p>
+                </div>
+                <div id="gemini-output" class="text-slate-600"></div>
+                <div id="gemini-error" class="text-red-600 text-center hidden"></div>
+            </div>
+        </section>
+
     </main>
 
+    <footer class="bg-slate-100 border-t border-slate-200 mt-20">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center text-slate-500">
+            <p>&copy; 2024 Commit Me Co Design. All Rights Reserved.</p>
+            <p class="text-sm mt-1">This is a confidential audit report.</p>
+        </div>
+    </footer>
+
     <script>
-        // Generate heatmap
-        function generateHeatmap() {
-            const heatmap = document.getElementById('heatmap');
-            const heatLevels = ['heat-high', 'heat-medium', 'heat-low', 'heat-none'];
+        document.addEventListener('DOMContentLoaded', () => {
+            const overallScore = 79;
             
-            // Simulate a realistic heatmap pattern
-            const pattern = [
-                2,2,2,1,1,1,0,0,3,3,
-                2,2,1,1,1,0,0,0,3,3,
-                2,1,1,1,0,0,0,0,3,3,
-                1,1,1,0,0,0,0,3,3,3,
-                1,1,0,0,0,0,3,3,3,3,
-                1,0,0,0,0,3,3,3,3,3,
-                0,0,0,0,3,3,3,3,3,3,
-                0,0,0,3,3,3,3,3,3,3,
-                3,3,3,3,3,3,3,3,3,3,
-                3,3,3,3,3,3,3,3,3,3
-            ];
+            const mainScoreText = document.getElementById('main-score-text');
+            const mainScoreProgress = document.getElementById('main-score-progress');
+            const radius = mainScoreProgress.r.baseVal.value;
+            const circumference = 2 * Math.PI * radius;
             
-            pattern.forEach((level, index) => {
-                const cell = document.createElement('div');
-                cell.className = `heatmap-cell ${heatLevels[level]}`;
-                cell.style.animationDelay = `${index * 0.02}s`;
-                cell.setAttribute('tabindex', '0');
-                cell.setAttribute('role', 'gridcell');
-                heatmap.appendChild(cell);
-            });
-        }
-
-        // Smooth scrolling for navigation
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                const targetSection = document.querySelector(targetId);
+            mainScoreProgress.style.strokeDasharray = circumference;
+            mainScoreProgress.style.strokeDashoffset = circumference;
+            
+            function setProgress(percent) {
+                const offset = circumference - (percent / 100) * circumference;
+                mainScoreProgress.style.strokeDashoffset = offset;
                 
-                // Update active nav item
-                document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Smooth scroll
-                targetSection.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            });
-        });
-
-        // Journey step interactions
-        document.querySelectorAll('.step-circle').forEach(step => {
-            const handleInteraction = function() {
-                const stepData = {
-                    '🏠': 'Landing Page Analysis: 67% of users leave without engaging. Hero message unclear, value proposition buried.',
-                    '👀': 'Browse Behavior: Users face choice overload with 12 navigation options. Average 8.2 seconds to decide.',
-                    '📖': 'Content Engagement: 89% don\'t scroll past fold. Wall of text creates cognitive overload.',
-                    '💳': 'Conversion Friction: Forms appear too early, 76% abandonment rate. No value established first.',
-                    '🔄': 'Retention Issues: Users unclear on next steps post-conversion. No onboarding sequence.'
-                };
-                
-                const icon = this.textContent.trim();
-                alert(stepData[icon] || 'Journey step details would appear here in a production interface.');
-            };
+                let strokeColor = '#ef4444'; // red-500
+                if (percent >= 90) strokeColor = '#0ea5e9'; // sky-500
+                else if (percent >= 75) strokeColor = '#22c55e'; // green-500
+                else if (percent >= 50) strokeColor = '#f59e0b'; // amber-500
+                mainScoreProgress.style.stroke = strokeColor;
+            }
             
-            step.addEventListener('click', handleInteraction);
-            step.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleInteraction.call(this);
-                }
-            });
-        });
-
-        // Initialize on load
-        document.addEventListener('DOMContentLoaded', function() {
-            generateHeatmap();
-            
-            // Animate cognitive load needle
             setTimeout(() => {
-                const needle = document.querySelector('.load-needle');
-                if (needle) {
-                    needle.style.transform = 'translateX(-50%) rotate(45deg)';
-                }
-            }, 1000);
+                setProgress(overallScore);
+                let currentScore = 0;
+                const interval = setInterval(() => {
+                    if (currentScore >= overallScore) {
+                        clearInterval(interval);
+                        mainScoreText.textContent = overallScore;
+                    } else {
+                        currentScore++;
+                        mainScoreText.textContent = currentScore;
+                    }
+                }, 1500 / overallScore);
+            }, 500);
 
-            // Add intersection observer for animations
+            const quadrantCards = document.getElementById('quadrant-cards');
+            const progressBars = document.querySelectorAll('.quadrant-score-bar-progress');
+            
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        entry.target.style.animationPlayState = 'running';
+                        progressBars.forEach(bar => {
+                            const score = bar.getAttribute('data-score');
+                            bar.style.width = `${score}%`;
+                        });
+                        observer.unobserve(quadrantCards);
                     }
                 });
-            }, { threshold: 0.3 });
-
-            document.querySelectorAll('.section').forEach(section => {
-                observer.observe(section);
-            });
-        });
-
-        // Update navigation active state on scroll
-        window.addEventListener('scroll', function() {
-            const sections = document.querySelectorAll('.section[id]');
-            const scrollPos = window.scrollY + 150;
-
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                const sectionHeight = section.offsetHeight;
-                const sectionId = section.getAttribute('id');
-                
-                if (scrollPos >= sectionTop && scrollPos <= sectionTop + sectionHeight) {
-                    document.querySelectorAll('.nav-links a').forEach(link => {
-                        link.classList.remove('active');
-                        if (link.getAttribute('href') === `#${sectionId}`) {
-                            link.classList.add('active');
-                        }
-                    });
-                }
-            });
-        });
-
-        // Keyboard navigation support
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Tab') {
-                document.body.classList.add('using-keyboard');
+            }, { threshold: 0.5 });
+            
+            if (quadrantCards) {
+                observer.observe(quadrantCards);
             }
-        });
+            
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link');
 
-        document.addEventListener('mousedown', function() {
-            document.body.classList.remove('using-keyboard');
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            document.querySelectorAll('.nav-link-mobile').forEach(link => {
+                link.addEventListener('click', () => {
+                     mobileMenu.classList.add('hidden');
+                });
+            });
+
+            // Gemini API Integration
+            const geminiButton = document.getElementById('gemini-button');
+            const geminiContainer = document.getElementById('gemini-container');
+            const geminiLoader = document.getElementById('gemini-loader-container');
+            const geminiOutput = document.getElementById('gemini-output');
+            const geminiError = document.getElementById('gemini-error');
+
+            function runGeminiDemo() {
+                geminiButton.disabled = true;
+                geminiButton.classList.add('opacity-50', 'cursor-not-allowed');
+                geminiContainer.classList.remove('hidden');
+                geminiLoader.classList.remove('hidden');
+                geminiOutput.innerHTML = '';
+                geminiError.classList.add('hidden');
+
+                const demoResponseHtml = `
+                    <h4>Leverage the Zeigarnik Effect to Bridge the Social-to-Site Gap</h4>
+                    <p>
+                        <strong>Behavioral Principle:</strong> The Zeigarnik Effect states that people remember uncompleted or interrupted tasks better than completed tasks. The current journey from social media is too disjointed, failing to create a compelling, unfinished loop in the user's mind. We can create a "curiosity gap" on social media that can only be resolved by clicking through to the website.
+                    </p>
+                    <p>
+                        <strong>First Step Example:</strong> Create an Instagram Story series titled "Three Myths About [Your Industry], Busted." The first two myths are busted directly in the story, but for the third, the text reads, "The #1 myth is the most shocking... and we reveal it at the link in our bio." The landing page should immediately present the third myth and its resolution, fulfilling the user's need for closure and continuing the journey.
+                    </p>
+                    
+                    <h4>Implement the "Foot-in-the-Door" Technique for Forms</h4>
+                    <p>
+                        <strong>Behavioral Principle:</strong> The Foot-in-the-Door technique suggests that if you can get someone to agree to a small request, they will be more likely to agree to a larger request later. Your current forms are intrusive because they ask for too much commitment at once.
+                    </p>
+                    <p>
+                        <strong>First Step Example:</strong> On a "Request a Quote" landing page, instead of a full form, start with a single, low-friction question like, "What's your biggest challenge with [service area] right now?" displayed in a large, friendly text box. After the user types a response and clicks "Next," reveal the remaining (and now simplified) fields like name and email. Having already invested a small amount of effort, they are now psychologically primed to complete the full request.
+                    </p>
+
+                    <h4>Use the "Serial Position Effect" to Anchor Social Proof</h4>
+                    <p>
+                        <strong>Behavioral Principle:</strong> The Serial Position Effect shows that people tend to remember the first (primacy) and last (recency) items in a series best. We can use this to strategically place your most powerful social proof where it will have the maximum psychological impact.
+                    </p>
+                    <p>
+                        <strong>First Step Example:</strong> Run a "Customer of the Week" campaign on LinkedIn. Then, take a screenshot of that post (including the positive comments) and place it as the *very first* testimonial on the corresponding product/service page on your website. This creates a powerful primacy effect, anchoring the rest of the user's experience in a positive, authentic customer story they may have just seen on another platform.
+                    </p>
+                `;
+
+                // Simulate network latency
+                setTimeout(() => {
+                    geminiLoader.classList.add('hidden');
+                    geminiOutput.innerHTML = demoResponseHtml;
+                    geminiButton.disabled = false;
+                    geminiButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                }, 1500);
+            }
+
+            if (geminiButton) {
+                geminiButton.addEventListener('click', runGeminiDemo);
+            }
+
+            /* --- REAL API CALL (DISABLED FOR DEMO) ---
+            async function getGeminiStrategy() {
+                // ... real api logic would go here
+            }
+            */
         });
     </script>
 </body>
 </html>
+
